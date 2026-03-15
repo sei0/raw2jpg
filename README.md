@@ -19,7 +19,7 @@ npm install -g raw2jpg
 ## Usage
 
 ```
-raw2jpg [options] <input>
+npx raw2jpg [options] <input>
 ```
 
 ### Options
@@ -39,16 +39,16 @@ raw2jpg [options] <input>
 
 ```bash
 # Convert all RAW files in a directory
-raw2jpg ./photos
+npx raw2jpg ./photos
 
 # Resize to 2K with 85% quality
-raw2jpg ./photos --size 2k -q 85
+npx raw2jpg ./photos --size 2k -q 85
 
 # Custom output directory
-raw2jpg ./photos -o ./exports
+npx raw2jpg ./photos -o ./exports
 
 # Preview what would be converted
-raw2jpg ./photos --dry-run
+npx raw2jpg ./photos --dry-run
 ```
 
 Output:
