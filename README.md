@@ -35,6 +35,7 @@ npx raw2jpg [options] <input>
 | `-s, --size <preset>` | Size preset: `original` `4k` `2k` `hd` `fhd` | `original` |
 | `-w, --width <n>` | Max width in px (keeps aspect ratio) | — |
 | `--height <n>` | Max height in px (keeps aspect ratio) | — |
+| `-c, --concurrency <n>` | Files to convert in parallel | CPU cores |
 | `--overwrite` | Overwrite existing files | `false` |
 | `--dry-run` | Preview without writing files | `false` |
 | `-v, --verbose` | Verbose output | `false` |
@@ -53,6 +54,9 @@ npx raw2jpg ./photos -o ./exports
 
 # Preview what would be converted
 npx raw2jpg ./photos --dry-run
+
+# Convert with 4 parallel workers
+npx raw2jpg ./photos -c 4
 ```
 
 Output:

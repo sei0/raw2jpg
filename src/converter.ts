@@ -1,6 +1,7 @@
 import { execFile, spawn } from 'node:child_process';
 import { createWriteStream, type Stats } from 'node:fs';
 import { mkdir, readdir, stat, unlink } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { promisify } from 'node:util';
@@ -17,6 +18,7 @@ export interface ConversionOptions {
   width?: number;
   height?: number;
   sizePreset: SizePreset;
+  concurrency: number;
   overwrite: boolean;
   dryRun: boolean;
   verbose: boolean;
@@ -233,6 +235,7 @@ export async function convertRawFiles(options: ConversionOptions): Promise<Conve
     printInfo(`Using backend: ${backend}`);
   }
 
+  const concurrency = Math.max(1, options.concurrency || os.cpus().length);
   const progress = new ProgressTracker();
   if (!options.dryRun) {
     progress.start(rawFiles.length);
@@ -243,61 +246,80 @@ export async function convertRawFiles(options: ConversionOptions): Promise<Conve
   let skipped = 0;
   let totalInputBytes = 0;
   let totalOutputBytes = 0;
+  let completed = 0;
   const failures: Array<{ file: string; error: string }> = [];
 
-  for (let index = 0; index < rawFiles.length; index += 1) {
-    const inputFile = rawFiles[index];
-    const filename = path.basename(inputFile);
-    const outputFile = outputFilePath(inputRoot, inputFile, outputDir, preserveStructure);
-
-    const sourceStats = await stat(inputFile);
-    totalInputBytes += sourceStats.size;
-
-    if (options.dryRun) {
+  if (options.dryRun) {
+    for (const inputFile of rawFiles) {
+      const outputFile = outputFilePath(inputRoot, inputFile, outputDir, preserveStructure);
+      const sourceStats = await stat(inputFile);
+      totalInputBytes += sourceStats.size;
       printInfo(`[dry-run] ${inputFile} -> ${outputFile}`);
       converted += 1;
-      continue;
     }
+  } else {
+    const processFile = async (inputFile: string): Promise<void> => {
+      const filename = path.basename(inputFile);
+      const outputFile = outputFilePath(inputRoot, inputFile, outputDir, preserveStructure);
 
-    let exists = false;
-    try {
-      await stat(outputFile);
-      exists = true;
-    } catch {
-      exists = false;
-    }
+      const sourceStats = await stat(inputFile);
+      totalInputBytes += sourceStats.size;
 
-    if (exists && !options.overwrite) {
-      skipped += 1;
-      if (options.verbose) {
-        printWarning(`Skipping existing file: ${outputFile}`);
-      }
-      progress.update(index + 1, filename);
-      continue;
-    }
-
-    try {
-      if (backend === 'sips') {
-        await convertWithSips(inputFile, outputFile, options.quality, plan);
-      } else {
-        await convertWithDcraw(inputFile, outputFile, options.quality, plan);
+      let exists = false;
+      try {
+        await stat(outputFile);
+        exists = true;
+      } catch {
+        exists = false;
       }
 
-      const outputStats = await stat(outputFile);
-      totalOutputBytes += outputStats.size;
-      converted += 1;
-    } catch (error) {
-      failed += 1;
-      failures.push({ file: inputFile, error: cleanErrorMessage(error) });
-      printWarning(`Failed to convert ${inputFile}: ${cleanErrorMessage(error)}`);
+      if (exists && !options.overwrite) {
+        skipped += 1;
+        if (options.verbose) {
+          printWarning(`Skipping existing file: ${outputFile}`);
+        }
+        completed += 1;
+        progress.update(completed, filename);
+        return;
+      }
 
       try {
-        await unlink(outputFile);
-      } catch {
-      }
-    }
+        if (backend === 'sips') {
+          await convertWithSips(inputFile, outputFile, options.quality, plan);
+        } else {
+          await convertWithDcraw(inputFile, outputFile, options.quality, plan);
+        }
 
-    progress.update(index + 1, filename);
+        const outputStats = await stat(outputFile);
+        totalOutputBytes += outputStats.size;
+        converted += 1;
+      } catch (error) {
+        failed += 1;
+        failures.push({ file: inputFile, error: cleanErrorMessage(error) });
+        printWarning(`Failed to convert ${inputFile}: ${cleanErrorMessage(error)}`);
+
+        try {
+          await unlink(outputFile);
+        } catch {
+        }
+      }
+
+      completed += 1;
+      progress.update(completed, filename);
+    };
+
+    // Concurrency pool: run up to `concurrency` tasks in parallel
+    let cursor = 0;
+    const next = async (): Promise<void> => {
+      while (cursor < rawFiles.length) {
+        const index = cursor;
+        cursor += 1;
+        await processFile(rawFiles[index]);
+      }
+    };
+
+    const workers = Array.from({ length: Math.min(concurrency, rawFiles.length) }, () => next());
+    await Promise.all(workers);
   }
 
   if (!options.dryRun) {

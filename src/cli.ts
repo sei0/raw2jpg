@@ -12,6 +12,7 @@ interface CliOptions {
   width?: number;
   height?: number;
   size: SizePreset;
+  concurrency: number;
   overwrite: boolean;
   dryRun: boolean;
   verbose: boolean;
@@ -63,6 +64,12 @@ async function main(): Promise<void> {
       parseSize,
       'original'
     )
+    .option(
+      '-c, --concurrency <number>',
+      'Number of files to convert in parallel (default: CPU cores)',
+      (value) => parseIntegerOption(value, 'Concurrency'),
+      0
+    )
     .option('--overwrite', 'Overwrite existing files', false)
     .option('--dry-run', 'Show what would be converted without converting', false)
     .option('-v, --verbose', 'Verbose output', false)
@@ -84,6 +91,7 @@ async function main(): Promise<void> {
     width: options.width,
     height: options.height,
     sizePreset: options.size,
+    concurrency: options.concurrency,
     overwrite: options.overwrite,
     dryRun: options.dryRun,
     verbose: options.verbose
