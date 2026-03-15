@@ -1,5 +1,7 @@
 # raw2jpg
 
+![raw2jpg cover](assets/rtj.png)
+
 Batch convert camera RAW files to JPEG from the command line, with quality and resize controls.
 
 Supports 17 RAW formats from major camera manufacturers including Sony (ARW), Canon (CR2/CR3), Nikon (NEF), Fujifilm (RAF), and more. Uses system-native `sips` on macOS or `dcraw` on Linux/Windows — no extra setup needed on Mac.
