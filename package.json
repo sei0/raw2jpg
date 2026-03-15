@@ -1,0 +1,50 @@
+{
+  "name": "raw2jpg",
+  "version": "1.0.0",
+  "description": "CLI tool to convert camera RAW files to JPEG with quality and resize options",
+  "type": "module",
+  "bin": {
+    "raw2jpg": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "cli-progress": "^3.12.0",
+    "commander": "^12.1.0",
+    "sharp": "^0.34.0"
+  },
+  "devDependencies": {
+    "@types/cli-progress": "^3.11.6",
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "raw",
+    "jpeg",
+    "jpg",
+    "arw",
+    "cr2",
+    "cr3",
+    "nef",
+    "dng",
+    "image-conversion",
+    "cli"
+  ],
+  "author": "sei0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sei0/raw2jpg.git"
+  },
+  "homepage": "https://github.com/sei0/raw2jpg#readme",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "README.md"
+  ]
+}
