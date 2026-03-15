@@ -4,16 +4,16 @@ Batch convert camera RAW files to JPEG from the command line, with quality and r
 
 Supports 17 RAW formats from major camera manufacturers including Sony (ARW), Canon (CR2/CR3), Nikon (NEF), Fujifilm (RAF), and more. Uses system-native `sips` on macOS or `dcraw` on Linux/Windows — no extra setup needed on Mac.
 
-## Install
-
-```bash
-npm install -g raw2jpg
-```
-
-Or run directly:
+## Quick Start
 
 ```bash
 npx raw2jpg ./photos --size 2k
+```
+
+Or install globally if you prefer:
+
+```bash
+npm install -g raw2jpg
 ```
 
 ## Usage
