@@ -52,6 +52,17 @@ npx raw2jpg [options] <input>
 
 ARW (Sony), CR2/CR3 (Canon), NEF/NRW (Nikon), RAF (Fujifilm), ORF (Olympus), RW2 (Panasonic), PEF (Pentax), SRW (Samsung), DNG (Adobe), 3FR (Hasselblad), KDC/DCR (Kodak), ERF (Epson), RWL (Leica), RAW (generic).
 
+## Example Prompts
+
+These are examples of what users might ask:
+
+- "Convert all the RAW files in this folder to JPEG"
+- "Resize my ARW photos to 2K and save as JPG"
+- "Batch convert the photos in ./photos to JPEG at 85% quality"
+- "Convert this CR2 file to JPEG"
+- "How many RAW files are in this folder? Do a dry run first"
+- "Convert my Sony RAW files to 2K JPEGs for web upload"
+
 ## Examples
 
 ```bash
@@ -73,6 +84,14 @@ npx raw2jpg ./photos --dry-run
 - **Node.js >= 18**
 - **macOS**: No extra setup — uses built-in `sips`
 - **Linux/Windows**: Requires `dcraw` (`apt install dcraw` or `brew install dcraw`)
+
+## Troubleshooting
+
+- **"No RAW files found"** → Check the input path. RAW files must have a supported extension (ARW, CR2, NEF, etc.)
+- **"Command not found: raw2jpg"** → Use `npx raw2jpg` instead, or install globally with `npm install -g raw2jpg`
+- **Conversion fails on Linux** → Install dcraw: `apt install dcraw` or `brew install dcraw`
+- **Output too large** → Use `--size 2k` or `--quality 80` to reduce file size
+- **Files skipped** → Existing output files are skipped by default. Use `--overwrite` to replace them
 
 ## Behavior Notes
 
